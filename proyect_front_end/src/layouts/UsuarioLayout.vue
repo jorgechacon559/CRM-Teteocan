@@ -1,7 +1,6 @@
 <script setup>
 import UserHeader from '@/components/usuario/UserHeader.vue'
 import UserSidemenu from '@/components/usuario/UserSidemenu.vue';
-import chatbot from '@/components/chatbot/chatbot.vue';
 </script>
 <template>
   <div class="layout-bg">
@@ -9,7 +8,6 @@ import chatbot from '@/components/chatbot/chatbot.vue';
       <UserHeader class="header" />
       <UserSidemenu class="aside" />
       <router-view class="content" />
-      <chatbot />
     </div>
   </div>
 </template>

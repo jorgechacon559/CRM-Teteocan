@@ -26,47 +26,57 @@ export const router = createRouter({
     },
     {
       path: "/inicio",
-      name: 'inicio',
       component: () => import("@/layouts/UsuarioLayout.vue"),
       meta: { requiresAuth: true },
       children: [
         {
-          path: '/inicio/productos',
-          name: 'productos',
-          component: () => import("@/components/productos/AllProducts.vue"),
+          path: '',
+          name: 'inicio',
+          component: () => import("@/components/inicio/Home.vue"),
           meta: { requiresAuth: true }
         },
         {
-          path: '/inicio/ventas',
-          name: 'ventas',
-          component: () => import("@/components/ventas/AllVentas.vue"),
+          path: '/organizaciones/crear',
+          name: 'crear-organizacion',
+          component: () => import("@/components/organizaciones/CrearOrganizacion.vue"),
           meta: { requiresAuth: true }
         },
         {
-          path: '/inicio/usuarios',
-          name: 'Usuarios',
+          path: '/seguimientos',
+          name: 'realizar-seguimiento',
+          component: () => import("@/components/seguimientos/RealizarSeguimiento.vue"),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: '/seguimientos/historial',
+          name: 'historial-seguimientos',
+          component: () => import("@/components/seguimientos/HistorialSeguimientos.vue"),
+          meta: { requiresAuth: true }
+        },
+        {
+          path: '/usuarios',
+          name: 'usuarios',
           component: () => import("@/components/usuario/AllUsers.vue"),
-          meta: { requiresAuth: true }
-        },
-        {
-          path: '/inicio/dashboard',
-          name: 'Dashboard',
-          component: () => import('@/components/dashboard/dashboard.vue'),
-          meta: { requiresAuth: true }
-        },
+          meta: { requiresAuth: true, requiresAdmin: true }
+        }
       ]
     },
+    {
+      path: '/:catchAll(.*)',
+      redirect: { name: 'inicio' }
+    }
   ]
 });
 
+// Protección de rutas y roles
 router.beforeEach(async (to, from, next) => {
   const user = sessionStorage.getItem('user');
   const token = sessionStorage.getItem('token');
   const refreshToken = sessionStorage.getItem('refresh_token');
   const authStore = useAuthStore();
 
-  // Si la ruta requiere ser admin
-  if (to.path === '/inicio/usuarios') {
+  // Solo admin puede acceder a /usuarios
+  if ((to.path === '/usuarios' || to.name === 'usuarios' || to.meta.requiresAdmin)) {
     if (!user) {
       next({ name: 'login' });
       return;

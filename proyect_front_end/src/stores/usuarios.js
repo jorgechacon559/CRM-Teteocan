@@ -18,7 +18,8 @@ export const useUsuariosStore = defineStore('usuarios', () => {
 
     const getAllInfoUsr = async (item) => {
         try {
-            const response = await general.getAllInfo(item);
+            const response = await general.getUsuarios(item); // <-- Cambia aquí
+            console.log('Respuesta getAllInfoUsr:', response.data);
             if (!response.data.success) throw response;
             setData(response.data.data);
             return response.data.data;

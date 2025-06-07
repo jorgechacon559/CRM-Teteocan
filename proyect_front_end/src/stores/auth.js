@@ -31,7 +31,9 @@ export const useAuthStore = defineStore("auth", {
                 sessionStorage.setItem("user", JSON.stringify(this.user));
                 sessionStorage.setItem("token", this.token);
                 sessionStorage.setItem("refresh_token", this.refreshToken);
-                router.push("/inicio");
+                if (router.currentRoute.value.path !== "/inicio") {
+                    router.push("/inicio");
+                }
             } catch (error) {
                 console.error(error);
                 throw error;
@@ -55,17 +57,19 @@ export const useAuthStore = defineStore("auth", {
                 this.token = null;
                 this.refreshToken = null;
                 this.isAuthenticated = false;
-                router.push("/login");
+                if (router.currentRoute.value.path !== "/login") {
+                    router.push("/login");
+                }
             }
         },
 
-        async register(name, apellido, correo, password) {
+        async register(nombre, apellido, email, password) {
             try {
                 const credentials = {
-                    nombre: name,
-                    apellido: apellido,
-                    email: correo,
-                    password: password,
+                    nombre,
+                    apellido,
+                    email,
+                    password,
                 };
                 const response = await auth.register(credentials);
                 return response;

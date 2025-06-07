@@ -1,11 +1,12 @@
-from app.models import Usuario
+from app.models.usuario import Usuario
 from app.extensions import db
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_jwt_extended import create_access_token, get_jwt_identity
+from flask import jsonify
 
-def get_all_users():
-    """
-    Retorna todos los usuarios registrados.
-    """
+def get_all_users(usuario_actual):
+    if usuario_actual.rol != 'admin':
+        return {"mensaje": "No autorizado"}, 403
     usuarios = Usuario.query.all()
     list_usuario = [{
         "usuario_id": usuario.usuario_id,
@@ -17,36 +18,29 @@ def get_all_users():
     } for usuario in usuarios]
     return {'success': True, 'data': list_usuario}, 200
 
-def get_data_usuario(usuario_id):
-    """
-    Retorna los datos de un usuario por su ID.
-    """
-    data_usuario = db.session.get(Usuario, usuario_id)
-    if not data_usuario:
-        return {
-            "message": "Usuario no encontrado"
-        }, 500
+def get_data_usuario(usuario_id, usuario_actual):
+    """Un agente solo puede ver su propio perfil. Admin puede ver cualquiera."""
+    if usuario_actual.rol != 'admin' and usuario_actual.usuario_id != usuario_id:
+        return {"mensaje": "No autorizado"}, 403
+    usuario = Usuario.query.get(usuario_id)
+    if not usuario:
+        return {"mensaje": "Usuario no encontrado"}, 404
     return {
-        "nombre": data_usuario.nombre,
-        "apellido": data_usuario.apellido,
-        "email": data_usuario.email,
-        "usuario_id": data_usuario.usuario_id,
-        "rol": data_usuario.rol
+        "nombre": usuario.nombre,
+        "apellido": usuario.apellido,
+        "email": usuario.email,
+        "usuario_id": usuario.usuario_id,
+        "rol": usuario.rol
     }, 200
 
 def registrar_usuario(data):
-    """
-    Registra un nuevo usuario si el email no existe.
-    """
+    """Registro público solo para agentes."""
     usuario_existente = Usuario.query.filter_by(email=data['email']).first()
     if usuario_existente:
-        return {
-            "mensaje": "El usuario ya existe"
-        }, 400
-
+        return {"mensaje": "El usuario ya existe"}, 400
     hashed_password = generate_password_hash(data['password'], method='pbkdf2:sha256', salt_length=8)
     nuevo_usuario = Usuario(
-        rol='usuario', 
+        rol='agente',
         nombre=data['nombre'],
         apellido=data['apellido'],
         email=data['email'],
@@ -55,7 +49,6 @@ def registrar_usuario(data):
     )
     db.session.add(nuevo_usuario)
     db.session.commit()
-
     return {
         "mensaje": "Usuario registrado con éxito",
         "usuario": {
@@ -67,24 +60,48 @@ def registrar_usuario(data):
     }, 201
 
 def login_usuario(data):
-    """
-    Realiza el login de un usuario validando email y contraseña.
-    """
+    """Login de usuario, retorna JWT si es correcto."""
     email = data.get('email')
     password = data.get('password')
     if not email or not password:
         return {"mensaje": "Faltan credenciales"}, 400
     usuario = Usuario.query.filter_by(email=email).first()
     if usuario and not usuario.baja and check_password_hash(usuario.password, password):
+        access_token = create_access_token(identity=usuario.usuario_id)
         return {
             "mensaje": "Inicio de sesión exitoso",
             "usuario_id": usuario.usuario_id,
             "nombre": usuario.nombre,
             "apellido": usuario.apellido,
             "rol": usuario.rol,
-            "email": usuario.email
-        }, 201
+            "email": usuario.email,
+            "access_token": access_token
+        }, 200
     else:
-        return {
-            "mensaje": "Credenciales incorrectas"
-        }, 401
+        return {"mensaje": "Credenciales incorrectas"}, 401
+
+def editar_usuario(usuario_id, data, usuario_actual):
+    """Editar perfil propio (nombre, apellido, email, password). Admin puede editar cualquiera."""
+    if usuario_actual.rol != 'admin' and usuario_actual.usuario_id != usuario_id:
+        return {"mensaje": "No autorizado"}, 403
+    usuario = Usuario.query.get(usuario_id)
+    if not usuario:
+        return {"mensaje": "Usuario no encontrado"}, 404
+    for campo in ['nombre', 'apellido', 'email']:
+        if campo in data:
+            setattr(usuario, campo, data[campo])
+    if 'password' in data and data['password']:
+        usuario.password = generate_password_hash(data['password'], method='pbkdf2:sha256', salt_length=8)
+    db.session.commit()
+    return {"mensaje": "Usuario actualizado correctamente"}, 200
+
+def desactivar_usuario(usuario_id, usuario_actual):
+    """Solo admin puede dar de baja a un usuario."""
+    if usuario_actual.rol != 'admin':
+        return {"mensaje": "No autorizado"}, 403
+    usuario = Usuario.query.get(usuario_id)
+    if not usuario:
+        return {"mensaje": "Usuario no encontrado"}, 404
+    usuario.baja = True
+    db.session.commit()
+    return {"mensaje": "Usuario dado de baja correctamente"}, 200

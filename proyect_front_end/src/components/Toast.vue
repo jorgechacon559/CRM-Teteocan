@@ -1,9 +1,12 @@
 <template>
-  <div v-if="show" :class="['toast', type]">{{ message }}</div>
+  <div v-if="show" :class="['toast', type]">
+    <i v-if="type === 'success'" class="fas fa-check-circle"></i>
+    <i v-else-if="type === 'error'" class="fas fa-exclamation-circle"></i>
+    {{ message }}
+  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
 const props = defineProps({ message: String, type: String, show: Boolean })
 </script>
 
@@ -15,11 +18,14 @@ const props = defineProps({ message: String, type: String, show: Boolean })
   transform: translateX(-50%);
   z-index: 9999;
   padding: 1rem 2rem;
-  border-radius: 0.7rem;
+  border-radius: 12px;
   font-weight: 600;
-  font-size: 1.1rem;
-  box-shadow: 0 2px 8px rgba(37,99,235,0.10);
-  animation: fadeInOut 2.5s;
+  font-size: 1rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  animation: fadeInOut 3s forwards;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .toast.success {
   background: #e6fbe6;
@@ -32,9 +38,9 @@ const props = defineProps({ message: String, type: String, show: Boolean })
   border: 2px solid #d32f2f;
 }
 @keyframes fadeInOut {
-  0% { opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { opacity: 0; }
+  0% { opacity: 0; top: -50px; }
+  10% { opacity: 1; top: 1.5rem; }
+  90% { opacity: 1; top: 1.5rem; }
+  100% { opacity: 0; top: -50px; }
 }
 </style>
