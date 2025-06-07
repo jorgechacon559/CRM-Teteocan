@@ -1,4 +1,4 @@
-# Sistema de gestión de ventas - Dashboard - Backend & Frontend
+# CRM Teteocan – Gestión de Organizaciones y Desarrollo Comercial
 
 ## Tabla de contenidos
 
@@ -12,7 +12,7 @@
 - [Funcionalidades](#funcionalidades)
 - [Endpoints principales](#endpoints-principales)
 - [Seguridad y roles](#seguridad-y-roles)
-- [Manejo de usuarios](#manejo-de-usuarios)
+- [Gestión de usuarios](#gestión-de-usuarios)
 - [Frontend: UX y notificaciones](#frontend-ux-y-notificaciones)
 - [Pruebas](#pruebas)
 - [Despliegue](#despliegue)
@@ -22,10 +22,8 @@
 
 ## Descripción general
 
-Este proyecto es una plataforma integral de gestión de ventas con:
-
-- **Backend** en Python (Flask) con autenticación JWT, roles de usuario, baja lógica, API RESTful, gestión de usuarios, productos y ventas, y chatbot integrado.
-- **Frontend** en Vue 3, con dashboard interactivo, autenticación, gestión de usuarios, productos y ventas, notificaciones tipo toast, y diseño responsivo.
+**CRM de Desarrollo Comercial Teteocan** es una plataforma moderna para la gestión de organizaciones y el seguimiento comercial, diseñada para equipos de ventas y agentes que buscan optimizar la prospección, el contacto y la conversión de empresas y negocios locales en clientes.  
+El sistema permite registrar organizaciones, asignar agentes, realizar seguimientos, gestionar el estado de cada organización (prospecto, cliente, descartado) y visualizar métricas clave, todo con una experiencia de usuario mejorada y una interfaz atractiva.
 
 ---
 
@@ -104,7 +102,6 @@ proyecto_back_end/
         routes/
         ...
     migrations/
-    tests/
     requirements.txt
     .env
     config.py
@@ -140,7 +137,7 @@ Inicializa y ejecuta las migraciones para crear las tablas:
 
 ```sh
 flask db init
-flask db migrate -m "tablas con relaciones"
+flask db migrate -m "tablas de organizaciones y seguimientos"
 flask db upgrade
 ```
 
@@ -167,44 +164,41 @@ npm run dev
 ### Backend
 
 - 🔐 **Autenticación JWT:** Registro, login, refresh y logout seguro.
-- 👤 **Roles:** Soporte para roles `admin` y `usuario`. Solo los admins pueden acceder a la gestión de usuarios.
-- 🛑 **Baja lógica:** Los usuarios pueden ser dados de baja (soft delete), cambiando su estado y email.
-- 🛡️ **Ascenso de usuario:** Un admin puede ascender a otro usuario a admin, previa confirmación de contraseña.
-- 🛒 **Gestión:** CRUD de productos, usuarios y ventas.
-- 🤖 **Chatbot:** Consultas sobre ventas, productos y soporte.
-- 📦 **API RESTful** para integración con el frontend.
-- 📈 **Métricas:** Endpoints para estadísticas y reportes.
+- 👤 **Gestión de usuarios y roles:** Soporte para roles `admin` y `agente`. Solo los admins pueden gestionar usuarios.
+- 🏢 **Gestión de organizaciones:** CRUD completo de organizaciones, clasificadas como empresas o negocios locales, con campos y detalles específicos según el tipo.
+- 📋 **Seguimiento comercial:** Registro y consulta de seguimientos, historial de interacciones, asignación de agentes y control de estados (prospecto, cliente, descartado).
+- 📈 **Reportes y métricas:** Endpoints para estadísticas de avance comercial y conversión.
+- 🛡️ **Baja lógica y control de acceso:** Usuarios y organizaciones pueden ser dados de baja sin perder historial.
 
 ### Frontend
 
-- 🖥️ **Dashboard:** Visualización de métricas y gráficas de ventas.
-- 👤 **Gestión de usuarios:** Alta, edición, baja lógica y ascenso de rol.
-- 🛍️ **Gestión de productos y ventas:** CRUD completo.
-- 💬 **Chatbot:** Interfaz de chat en tiempo real.
-- 🔒 **Autenticación:** Formularios de login y registro, manejo de tokens y refresh.
-- 🎨 **UI/UX:** Diseño responsivo y moderno.
+- 🖥️ **Dashboard:** Visualización de métricas y gráficas de avance comercial.
+- 🏢 **Gestión de organizaciones:** Alta, edición, búsqueda y filtrado avanzado de empresas y negocios locales.
+- 🔄 **Seguimiento y conversión:** Registro de contactos, cambios de estado y visualización de historial de cada organización.
+- 👤 **Gestión de usuarios:** Alta, edición, baja lógica y ascenso de rol (admin/agente).
+- 🎨 **UI/UX mejorada:** Interfaz moderna, responsiva, con validaciones visuales, modales, toasts personalizados y experiencia de usuario optimizada.
 - ✅ **Notificaciones toast:** Mensajes de éxito y error con toasts personalizados (verde para éxito, rojo para errores o bajas).
 
 ---
 
 ## Endpoints principales
 
-| Método | Ruta                                 | Descripción                        |
-|--------|--------------------------------------|------------------------------------|
-| POST   | /api/login                           | Autenticación de usuario           |
-| POST   | /api/refresh                         | Refrescar token JWT                |
-| POST   | /api/registrar                       | Registro de usuario                |
-| GET    | /api/usuarios                        | Listar usuarios (solo admin)       |
-| PUT    | /api/usuarios/<id>/baja              | Baja lógica de usuario (admin)     |
-| PUT    | /api/usuarios/<id>/hacer-admin       | Ascender usuario a admin (admin)   |
-| GET    | /api/productos                       | Listar productos                   |
-| POST   | /api/productos                       | Crear producto                     |
-| PUT    | /api/productos/<id>                  | Editar producto                    |
-| DELETE | /api/productos/<id>                  | Eliminar producto (baja lógica)    |
-| GET    | /api/ventas                          | Listar ventas                      |
-| POST   | /api/ventas                          | Crear venta                        |
-| GET    | /api/chatbot                         | Consultar chatbot                  |
-| GET    | /api/ventas/data                     | Obtener métricas de ventas         |
+| Método | Ruta                                         | Descripción                                 |
+|--------|----------------------------------------------|---------------------------------------------|
+| POST   | /api/login                                   | Autenticación de usuario                    |
+| POST   | /api/refresh                                 | Refrescar token JWT                         |
+| POST   | /api/registrar                               | Registro de usuario (agente)                |
+| GET    | /api/usuarios                                | Listar usuarios (solo admin)                |
+| PUT    | /api/usuarios/<id>/baja                      | Baja lógica de usuario (admin)              |
+| PUT    | /api/usuarios/<id>/hacer-admin               | Ascender usuario a admin (admin)            |
+| GET    | /api/organizaciones/                         | Listar organizaciones (con filtros)         |
+| POST   | /api/organizaciones/                         | Crear organización                          |
+| GET    | /api/organizaciones/<id>                     | Obtener detalles de organización            |
+| PUT    | /api/organizaciones/<id>                     | Editar organización                         |
+| GET    | /api/seguimientos/organizacion/<id>          | Historial de seguimientos de una organización|
+| POST   | /api/seguimientos/registrar                  | Registrar seguimiento                       |
+| GET    | /api/reportes/resumen-organizaciones         | Resumen por estado de organización          |
+| GET    | /api/reportes/organizaciones-nivel-digital   | Organizaciones por nivel de digitalización  |
 
 ---
 
@@ -212,8 +206,8 @@ npm run dev
 
 - **Contraseñas:** Hasheadas con bcrypt.
 - **Roles:**  
-  - `admin`: Acceso total a usuarios, productos y ventas.
-  - `usuario`: Acceso solo a sus propios datos y ventas.
+  - `admin`: Acceso total a usuarios y organizaciones.
+  - `agente`: Acceso solo a sus propias organizaciones asignadas y seguimientos.
 - **Protección de rutas:**  
   - Solo admins pueden acceder a `/usuarios` y realizar bajas o ascensos.
   - Validación de rol en backend y frontend.
@@ -226,7 +220,7 @@ npm run dev
 
 ---
 
-## Manejo de usuarios
+## Gestión de usuarios
 
 - **Registro:**  
   - Validación de email único.
@@ -245,16 +239,18 @@ npm run dev
 ## Frontend: UX y notificaciones
 
 - **Toasts personalizados:**  
-  - Componente `Toast.vue` reutilizable.
+  - Componente reutilizable.
   - Verde para éxito (`success`), rojo para errores o bajas (`error`).
   - Cierre automático y manual.
 - **Validaciones visuales:**  
   - Inputs con feedback visual para errores.
-  - Mensajes claros en formularios de login y registro.
+  - Mensajes claros en formularios de login, registro y CRUD de organizaciones.
 - **Paginación y búsqueda:**  
-  - Listados paginados de usuarios y ventas.
+  - Listados paginados y filtrados de organizaciones y usuarios.
 - **Modal de ascenso:**  
   - Confirmación con contraseña antes de ascender a admin.
+- **Diseño moderno y responsivo:**  
+  - Mejoras visuales y de experiencia en todos los módulos.
 
 ---
 
