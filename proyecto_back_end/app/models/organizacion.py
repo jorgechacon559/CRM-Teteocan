@@ -14,12 +14,14 @@ class Organizacion(db.Model):
     ubicacion = db.Column(db.String(150), nullable=True)
     sector = db.Column(db.String(100), nullable=True)
     categoria = db.Column(db.String(100), nullable=True)
+    sitio_web = db.Column(db.String(255), nullable=True)
     notas = db.Column(db.Text, nullable=True)
     fecha_creacion = db.Column(db.DateTime, nullable=False, server_default=db.func.current_timestamp())
     fecha_actualizacion = db.Column(db.DateTime, nullable=True, onupdate=db.func.current_timestamp())
     prospecto_id = db.Column(db.Integer, db.ForeignKey('usuarios.usuario_id'), nullable=True, comment='Agente asignado')
     nivel_digitalizacion = db.Column(db.Integer, nullable=False, default=0)
     estado_organizacion = db.Column(db.Enum('prospecto', 'cliente', 'descartado'), nullable=False, default='prospecto')
+    masivo = db.Column(db.Boolean, nullable=False, default=False)
 
     # Relaciones
     seguimientos = db.relationship('Seguimiento', backref='organizacion_ref', lazy=True)
@@ -38,10 +40,12 @@ class Organizacion(db.Model):
             "ubicacion": self.ubicacion,
             "sector": self.sector,
             "categoria": self.categoria,
+            "sitio_web": self.sitio_web,
             "notas": self.notas,
             "fecha_creacion": self.fecha_creacion.isoformat() if self.fecha_creacion else None,
             "fecha_actualizacion": self.fecha_actualizacion.isoformat() if self.fecha_actualizacion else None,
             "prospecto_id": self.prospecto_id,
             "nivel_digitalizacion": self.nivel_digitalizacion,
-            "estado_organizacion": self.estado_organizacion
+            "estado_organizacion": self.estado_organizacion,
+            "masivo": self.masivo
         }

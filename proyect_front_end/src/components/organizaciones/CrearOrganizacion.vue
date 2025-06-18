@@ -89,6 +89,15 @@
                 </div>
               </div>
               <div class="form-group">
+                <label class="form-label">Sitio web</label>
+                <div class="input-container">
+                  <i class="fas fa-globe"></i>
+                  <input class="form-input" v-model="form.sitio_web" maxlength="255" placeholder="https://www.ejemplo.com" />
+                </div>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
                 <label class="form-label">Notas</label>
                 <div class="input-container">
                   <i class="fas fa-sticky-note"></i>
@@ -114,15 +123,6 @@
                 <div class="input-container">
                   <i class="fas fa-users"></i>
                   <input class="form-input" v-model.number="empresa.numero_empleados" type="number" min="1" placeholder="Cantidad de empleados" />
-                </div>
-              </div>
-            </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label">Sitio web</label>
-                <div class="input-container">
-                  <i class="fas fa-globe"></i>
-                  <input class="form-input" v-model="empresa.sitio_web" maxlength="255" placeholder="https://www.empresa.com" />
                 </div>
               </div>
             </div>
@@ -184,13 +184,13 @@ const form = ref({
   direccion: '',
   codigo_postal: '',
   email_contacto: '',
+  sitio_web: '',
   notas: ''
 })
 
 const empresa = ref({
   sector: '',
-  numero_empleados: null,
-  sitio_web: ''
+  numero_empleados: null
 })
 
 const negocio = ref({
@@ -222,6 +222,7 @@ async function submitForm() {
     // 1. Crear organización principal
     const orgPayload = {
       ...form.value,
+      sitio_web: form.value.sitio_web,
       sector: form.value.tipo === 'empresa' ? empresa.value.sector : null,
       categoria: form.value.tipo === 'negocio_local' ? negocio.value.categoria : null
     }
@@ -239,9 +240,10 @@ async function submitForm() {
       direccion: '',
       codigo_postal: '',
       email_contacto: '',
+      sitio_web: '',
       notas: ''
     }
-    empresa.value = { sector: '', numero_empleados: null, sitio_web: '' }
+    empresa.value = { sector: '', numero_empleados: null }
     negocio.value = { categoria: '', horario_apertura: '', horario_cierre: '' }
     
     // Animación de éxito

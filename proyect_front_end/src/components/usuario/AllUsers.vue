@@ -137,7 +137,7 @@ const realizarUpgrade = async () => {
             upgradeError.value = 'No se encontró el correo del administrador actual.';
             return;
         }
-        const response = await api.post('/login', {
+        const response = await api.post('/usuarios/login', {
             email: adminEmail,
             password: adminPassword.value
         });
@@ -259,7 +259,7 @@ const eliminarUsuario = async (usuario_id) => {
               </button>
               <!-- Botón eliminar -->
               <button
-                v-if="identity && identity.rol === 'admin' && !item.baja"
+                v-if="identity && identity.rol === 'admin' && !item.baja && item.usuario_id !== identity.usuario_id"
                 class="btn-action btn-delete"
                 @click="eliminarUsuario(item.usuario_id)"
                 title="Dar de baja"

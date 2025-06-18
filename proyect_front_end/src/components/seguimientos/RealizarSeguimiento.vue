@@ -18,7 +18,7 @@
         <div class="search-card">
           <div class="search-header">
             <i class="fas fa-search-location icon-primary"></i>
-            <h3>Buscar organización</h3>
+            <h3>Seleccionar organización</h3>
           </div>
           <div class="search-controls">
             <div class="radio-group">
@@ -35,69 +35,149 @@
                 </label>
               </div>
             </div>
-            <div class="search-container">
-              <i class="fas fa-search search-icon"></i>
-              <input
-                class="search-input"
-                v-model="busqueda"
-                :placeholder="tipoBusqueda === 'empresa' ? 'Buscar empresas...' : 'Buscar negocios locales...'"
-                @input="buscarOrganizaciones"
-              />
-            </div>
           </div>
         </div>
       </div>
       <div class="results-section">
-        <div v-if="busqueda.length > 1" class="results-container">
-          <div class="results-group">
-            <div class="results-header">
-              <i class="fas fa-unlock icon-disponible"></i>
-              <h4>Disponibles</h4>
-            </div>
-            <div v-if="organizacionesDisponibles.length" class="results-grid">
-            <div
-              v-for="org in organizacionesDisponibles"
-              :key="org.organizacion_id"
-              class="result-card"
-              @click="seleccionarOrganizacion(org)"
-              :class="{ selected: org.organizacion_id === seleccionada?.organizacion_id }"
-            >
-              <div class="org-name">{{ org.nombre }}</div>
-              <div v-if="org.prospecto_id && usuarioActual.rol === 'admin'" class="badge badge-asignada">
-                Asignada a {{ org.asignado_nombre || 'otro agente' }}
-              </div>
-              <div v-else class="badge badge-disponible">
-                Disponible
-              </div>
-            </div>
-            </div>
-            <div v-else class="no-results">
-              <i class="fas fa-info-circle"></i> No hay organizaciones disponibles
-            </div>
+        <div class="results-container">
+        <div class="results-group">
+          <div class="results-header">
+            <i class="fas fa-unlock icon-disponible"></i>
+            <h4>Disponibles</h4>
           </div>
+<div v-if="paginadasDisponibles.length" class="results-grid">
+  <div
+    v-for="org in paginadasDisponibles"
+    :key="org.organizacion_id"
+    class="result-card"
+    @click="seleccionarOrganizacion(org)"
+    :class="{ selected: org.organizacion_id === seleccionada?.organizacion_id }"
+  >
+    <div class="org-name">{{ org.nombre }}</div>
+    <div v-if="org.masivo" class="badge badge-masivo">
+      Contactado por correo masivo
+    </div>
+    <div v-if="org.prospecto_id && org.prospecto_id !== usuarioActual.usuario_id" class="badge badge-asignada">
+      Asignada a {{ org.asignado_nombre || 'otro agente' }}
+    </div>
+    <div v-else class="badge badge-disponible">
+      Disponible
+    </div>
+  </div>
+</div>
+<div v-else class="no-results">
+  <i class="fas fa-info-circle"></i> No hay organizaciones disponibles
+</div>
+<div v-if="totalPaginasDisponibles > 1" class="pagination-compact">
+  <button
+    class="pagination-control"
+    :disabled="paginaDisponibles === 1"
+    @click="paginaDisponibles = 1"
+    aria-label="Primera página"
+  >
+    <i class="fas fa-angle-double-left"></i>
+  </button>
+  <button
+    class="pagination-control"
+    :disabled="paginaDisponibles === 1"
+    @click="paginaDisponibles--"
+    aria-label="Página anterior"
+  >
+    <i class="fas fa-angle-left"></i>
+  </button>
+  <button
+    v-for="n in paginasVisibles(paginaDisponibles, totalPaginasDisponibles)"
+    :key="n"
+    :class="['pagination-item', { active: paginaDisponibles === n, dots: n === '...' }]"
+    @click="typeof n === 'number' && (paginaDisponibles = n)"
+    :disabled="n === '...'"
+  >{{ n }}</button>
+  <button
+    class="pagination-control"
+    :disabled="paginaDisponibles === totalPaginasDisponibles"
+    @click="paginaDisponibles++"
+    aria-label="Página siguiente"
+  >
+    <i class="fas fa-angle-right"></i>
+  </button>
+  <button
+    class="pagination-control"
+    :disabled="paginaDisponibles === totalPaginasDisponibles"
+    @click="paginaDisponibles = totalPaginasDisponibles"
+    aria-label="Última página"
+  >
+    <i class="fas fa-angle-double-right"></i>
+  </button>
+</div>
+
+        </div>
           <div class="results-group">
             <div class="results-header">
               <i class="fas fa-user-check icon-asignada"></i>
               <h4>Asignadas a ti</h4>
             </div>
-            <div v-if="organizacionesAsignadas.length" class="results-grid">
-              <div
-                v-for="org in organizacionesAsignadas"
-                :key="org.organizacion_id"
-                class="result-card"
-                @click="seleccionarOrganizacion(org)"
-                :class="{ selected: org.organizacion_id === seleccionada?.organizacion_id }"
-              >
-                <div class="org-name">{{ org.nombre }}</div>
-                <div class="badge badge-asignada">Asignada</div>
-                <div class="badge" :class="badgeEstado(org.estado_organizacion)">
-                  {{ org.estado_organizacion }}
-                </div>
-              </div>
-            </div>
-            <div v-else class="no-results">
-              <i class="fas fa-info-circle"></i> No tienes prospectos asignados
-            </div>
+<div v-if="paginadasAsignadas.length" class="results-grid">
+  <div
+    v-for="org in paginadasAsignadas"
+    :key="org.organizacion_id"
+    class="result-card"
+    @click="seleccionarOrganizacion(org)"
+    :class="{ selected: org.organizacion_id === seleccionada?.organizacion_id }"
+  >
+    <div class="org-name">{{ org.nombre }}</div>
+    <div v-if="org.masivo" class="badge badge-masivo">
+      Contactado por correo masivo
+    </div>
+    <div class="badge badge-asignada">Asignada</div>
+    <div class="badge" :class="badgeEstado(org.estado_organizacion)">
+      {{ org.estado_organizacion }}
+    </div>
+  </div>
+</div>
+<div v-else class="no-results">
+  <i class="fas fa-info-circle"></i> No tienes prospectos asignados
+</div>
+<div v-if="totalPaginasAsignadas > 1" class="pagination-compact">
+  <button
+    class="pagination-control"
+    :disabled="paginaAsignadas === 1"
+    @click="paginaAsignadas = 1"
+    aria-label="Primera página"
+  >
+    <i class="fas fa-angle-double-left"></i>
+  </button>
+  <button
+    class="pagination-control"
+    :disabled="paginaAsignadas === 1"
+    @click="paginaAsignadas--"
+    aria-label="Página anterior"
+  >
+    <i class="fas fa-angle-left"></i>
+  </button>
+  <button
+    v-for="n in paginasVisibles(paginaAsignadas, totalPaginasAsignadas)"
+    :key="n"
+    :class="['pagination-item', { active: paginaAsignadas === n, dots: n === '...' }]"
+    @click="typeof n === 'number' && (paginaAsignadas = n)"
+    :disabled="n === '...'"
+  >{{ n }}</button>
+  <button
+    class="pagination-control"
+    :disabled="paginaAsignadas === totalPaginasAsignadas"
+    @click="paginaAsignadas++"
+    aria-label="Página siguiente"
+  >
+    <i class="fas fa-angle-right"></i>
+  </button>
+  <button
+    class="pagination-control"
+    :disabled="paginaAsignadas === totalPaginasAsignadas"
+    @click="paginaAsignadas = totalPaginasAsignadas"
+    aria-label="Última página"
+  >
+    <i class="fas fa-angle-double-right"></i>
+  </button>
+</div>
           </div>
         </div>
       </div>
@@ -116,6 +196,21 @@
                   <span>{{ seleccionada.email_contacto || 'Sin email' }}</span>
                 </div>
               </div>
+<div class="meta-item" v-if="seleccionada.sitio_web">
+  <i class="fas fa-globe"></i>
+  <template v-if="seleccionada.sitio_web !== 'Sin sitio web'">
+    <a
+      :href="formateaSitioWeb(seleccionada.sitio_web)"
+      target="_blank"
+      style="color:inherit;text-decoration:underline;"
+    >
+      {{ seleccionada.sitio_web }}
+    </a>
+  </template>
+  <template v-else>
+    {{ seleccionada.sitio_web }}
+  </template>
+</div>
             </div>
             <div class="org-status">
               <div class="level-badges">
@@ -160,6 +255,10 @@
                   <div class="form-group">
                     <label class="form-label">Email</label>
                     <input class="form-input" v-model="seleccionada.email_contacto" maxlength="100" />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Sitio web</label>
+                    <input class="form-input" v-model="seleccionada.sitio_web" maxlength="255" placeholder="https://www.ejemplo.com" />
                   </div>
                   <div class="form-actions">
                     <button class="btn btn-outline" @click="guardarEdicion">
@@ -225,13 +324,13 @@
                         </button>
                       </div>
                     </div>
-<div class="form-group" v-else>
-  <label class="form-label">Nivel de digitalización</label>
-  <div class="digital-pill active" style="pointer-events:none;">
-    <i :class="nivelIcon(seleccionada.nivel_digitalizacion)"></i>
-    {{ nivelLabel(seleccionada.nivel_digitalizacion) }}
-  </div>
-</div>
+                    <div class="form-group" v-else>
+                      <label class="form-label">Nivel de digitalización</label>
+                      <div class="digital-pill active" style="pointer-events:none;">
+                        <i :class="nivelIcon(seleccionada.nivel_digitalizacion)"></i>
+                        {{ nivelLabel(seleccionada.nivel_digitalizacion) }}
+                      </div>
+                    </div>
                     <div class="form-group full-width">
                       <label class="form-label">Comentarios <span class="required">*</span></label>
                       <textarea class="comments-input" v-model="seguimiento.comentarios" required maxlength="1000" placeholder="Detalla la interacción..." />
@@ -297,12 +396,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import generalApi from '@/api/endpoints/general'
 import dayjs from 'dayjs'
 
 const tipoBusqueda = ref('empresa')
-const busqueda = ref('')
 const organizacionesDisponibles = ref([])
 const organizacionesAsignadas = ref([])
 const seleccionada = ref(null)
@@ -326,36 +424,54 @@ const esAsignado = computed(() =>
   seleccionada.value && seleccionada.value.prospecto_id === usuarioActual.usuario_id
 )
 
-// Buscar organizaciones según tipo y texto
-async function buscarOrganizaciones() {
+onMounted(() => {
+  cargarOrganizaciones()
+})
+
+watch(tipoBusqueda, () => {
+  cargarOrganizaciones()
+  paginaAsignadas.value = 1
+  paginaDisponibles.value = 1
+})
+
+async function cargarOrganizaciones() {
   seleccionada.value = null
   historial.value = []
-  if (busqueda.value.length < 1) {
-    organizacionesDisponibles.value = []
-    organizacionesAsignadas.value = []
-    return
+  paginaDisponibles.value = 1
+  paginaAsignadas.value = 1
+  if (usuarioActual.rol === 'admin') {
+    const res = await generalApi.getOrganizaciones({ tipo: tipoBusqueda.value })
+    const todas = res.data.organizaciones || []
+    // Asignadas a mí
+    organizacionesAsignadas.value = todas.filter(
+      org => org.prospecto_id === usuarioActual.usuario_id
+    )
+    // Disponibles: las que no están asignadas a mí
+    organizacionesDisponibles.value = todas.filter(
+      org => org.prospecto_id !== usuarioActual.usuario_id
+    )
   }
-
-  const [disponibles, asignadas] = await Promise.all([
-    generalApi.getOrganizaciones({
-      tipo: tipoBusqueda.value,
-      prospecto_id: null,
-      nombre: busqueda.value
-    }).then(r => r.data.organizaciones || []),
-    generalApi.getOrganizaciones({
-      tipo: tipoBusqueda.value,
-      prospecto_id: usuarioActual.usuario_id,
-      nombre: busqueda.value
-    }).then(r => r.data.organizaciones || [])
-  ])
-  const asignadasIds = new Set(asignadas.map(org => org.organizacion_id))
-  const filtro = org => org.nombre.toLowerCase().includes(busqueda.value.toLowerCase())
-  // Excluir las asignadas de las disponibles
-  organizacionesDisponibles.value = disponibles.filter(
-    org => filtro(org) && !asignadasIds.has(org.organizacion_id)
-  )
-  organizacionesAsignadas.value = asignadas.filter(filtro)
 }
+
+const elementosPorPagina = 20
+const paginaDisponibles = ref(1)
+const paginaAsignadas = ref(1)
+
+const totalPaginasDisponibles = computed(() =>
+  Math.ceil(organizacionesDisponibles.value.length / elementosPorPagina)
+)
+const totalPaginasAsignadas = computed(() =>
+  Math.ceil(organizacionesAsignadas.value.length / elementosPorPagina)
+)
+
+const paginadasDisponibles = computed(() => {
+  const start = (paginaDisponibles.value - 1) * elementosPorPagina
+  return organizacionesDisponibles.value.slice(start, start + elementosPorPagina)
+})
+const paginadasAsignadas = computed(() => {
+  const start = (paginaAsignadas.value - 1) * elementosPorPagina
+  return organizacionesAsignadas.value.slice(start, start + elementosPorPagina)
+})
 
 // Seleccionar organización y cargar historial
 async function seleccionarOrganizacion(org) {
@@ -378,7 +494,8 @@ async function guardarEdicion() {
     await generalApi.editarOrganizacion(seleccionada.value.organizacion_id, {
       telefono: seleccionada.value.telefono,
       direccion: seleccionada.value.direccion,
-      email_contacto: seleccionada.value.email_contacto
+      email_contacto: seleccionada.value.email_contacto,
+      sitio_web: seleccionada.value.sitio_web
     })
     successMsg.value = 'Datos actualizados correctamente'
     setTimeout(() => (successMsg.value = ''), 3000)
@@ -421,7 +538,7 @@ async function registrarSeguimiento() {
     })
     successMsg.value = 'Seguimiento registrado exitosamente'
     await seleccionarOrganizacion(seleccionada.value)
-    await buscarOrganizaciones()
+    await cargarOrganizaciones()
     // Limpia el formulario
     seguimiento.value = {
       tipo: '',
@@ -491,6 +608,28 @@ function nivelIcon(n) {
     case 5: return 'fas fa-check-circle'
     default: return 'fas fa-question'
   }
+}
+
+function paginasVisibles(paginaActual, totalPaginas) {
+  const paginas = []
+  if (totalPaginas <= 7) {
+    for (let i = 1; i <= totalPaginas; i++) paginas.push(i)
+  } else {
+    if (paginaActual <= 4) {
+      paginas.push(1, 2, 3, 4, 5, '...', totalPaginas)
+    } else if (paginaActual >= totalPaginas - 3) {
+      paginas.push(1, '...', totalPaginas - 4, totalPaginas - 3, totalPaginas - 2, totalPaginas - 1, totalPaginas)
+    } else {
+      paginas.push(1, '...', paginaActual - 1, paginaActual, paginaActual + 1, '...', totalPaginas)
+    }
+  }
+  return paginas
+}
+
+function formateaSitioWeb(url) {
+  if (!url) return ''
+  if (/^https?:\/\//i.test(url)) return url
+  return 'https://' + url
 }
 </script>
 
@@ -695,10 +834,6 @@ body {
   color: var(--primary);
 }
 
-.search-container {
-  position: relative;
-  width: 100%;
-}
 
 .search-icon {
   position: absolute;
@@ -707,17 +842,6 @@ body {
   transform: translateY(-50%);
   color: var(--gray);
   font-size: 1.1rem;
-}
-
-.search-input {
-  width: 100%;
-  padding: 16px 20px 16px 50px;
-  border: 2px solid var(--light-gray);
-  border-radius: 12px;
-  font-size: 1.1rem;
-  transition: var(--transition);
-  background: var(--light);
-  font-family: 'Poppins', sans-serif;
 }
 
 .search-input:focus {
@@ -773,20 +897,21 @@ body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 15px;
-  max-height: 300px;
+  max-height: 400px;
   overflow-y: auto;
 }
 
 .result-card {
   background: var(--light);
   border-radius: 12px;
-  padding: 18px;
+  padding: 10px 12px;
   cursor: pointer;
   transition: var(--transition);
   border: 2px solid transparent;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
+  min-height: 48px;
 }
 
 .result-card:hover {
@@ -802,8 +927,9 @@ body {
 
 .org-name {
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--dark);
+  margin-bottom: 2px;
 }
 
 .badge {
@@ -812,7 +938,7 @@ body {
   border-radius: 20px;
   font-size: 0.9rem;
   font-weight: 600;
-  text-transform: capitalize;
+  text-transform: none;
 }
 
 .badge-disponible { 
@@ -825,25 +951,28 @@ body {
   background: rgba(46, 204, 113, 0.1); 
   color: var(--success);
   align-self: flex-start;
+  text-transform: capitalize;
 }
 
 .badge-prospecto { 
   background: rgba(243, 156, 18, 0.15); 
   color: #b45309;
   text-transform: capitalize;
-  font-weight: 600;
+  align-self: flex-start;
 }
 
 .badge-cliente { 
   background: rgba(46, 204, 113, 0.1); 
   color: var(--success);
   align-self: flex-start;
+  text-transform: capitalize;
 }
 
 .badge-descartado { 
   background: rgba(231, 76, 60, 0.1); 
   color: var(--danger);
   align-self: flex-start;
+  text-transform: capitalize;
 }
 
 .no-results {
@@ -1154,6 +1283,11 @@ body {
 .badge-prospeccion { background: linear-gradient(135deg, #4361ee, #3a0ca3); }
 .badge-seguimiento { background: linear-gradient(135deg, #4cc9f0, #4895ef); }
 .badge-cierre { background: linear-gradient(135deg, #2ecc71, #1d9b5c); }
+.badge-masivo {
+  background: #e0e7ff;
+  color: #3b82f6;
+  align-self: flex-start;
+}
 
 .timeline-content {
   background: var(--light);
@@ -1389,6 +1523,101 @@ body {
   margin-top: 8px;
   margin-bottom: 8px;
   flex-wrap: wrap;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0 0 0;
+}
+
+.pagination button {
+  background: #fff;
+  color: #3a0ca3;
+  border: 1.5px solid #3a0ca3;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.pagination button.active,
+.pagination button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #4361ee, #3a0ca3);
+  color: #fff;
+}
+
+.pagination button:disabled {
+  background: #e2e8f0;
+  color: #b0b0b0;
+  cursor: not-allowed;
+}
+
+.pagination-compact {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin: 18px 0 0 0;
+  flex-wrap: wrap;
+}
+
+.pagination-item,
+.pagination-control {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 1.05rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: #fff;
+  color: #3a0ca3;
+  border: 1.5px solid #3a0ca3;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(67, 97, 238, 0.06);
+  margin: 0 1px;
+  outline: none;
+}
+
+.pagination-item.active {
+  background: linear-gradient(135deg, #4361ee, #3a0ca3);
+  color: #fff;
+  font-weight: 700;
+  border-color: #3a0ca3;
+  box-shadow: 0 0 10px #3a0ca333;
+  transform: scale(1.08);
+}
+
+.pagination-item.dots {
+  background: transparent;
+  color: #b0b0b0;
+  border: none;
+  cursor: default;
+  font-size: 1.2rem;
+  width: auto;
+  min-width: 18px;
+}
+
+.pagination-control:disabled,
+.pagination-item:disabled {
+  background: #e2e8f0;
+  color: #b0b0b0;
+  cursor: not-allowed;
+  border-color: #e2e8f0;
+}
+
+.pagination-control:hover:not(:disabled),
+.pagination-item:hover:not(.active):not(:disabled):not(.dots) {
+  background: #f3f0ff;
+  color: #3a0ca3;
+  box-shadow: 0 2px 8px #3a0ca322;
 }
 
 .nivel-btn {

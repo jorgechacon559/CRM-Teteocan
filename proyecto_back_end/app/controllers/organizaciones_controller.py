@@ -108,7 +108,7 @@ def listar_organizaciones(filtros, usuario):
 
     # Paginación
     page = int(filtros.get('page', 1))
-    per_page = int(filtros.get('per_page', 20))
+    per_page = int(filtros.get('per_page', 1000000))
     pagination = query.paginate(page=page, per_page=per_page, error_out=False)
     resultado = []
     for org in pagination.items:
@@ -168,7 +168,7 @@ def editar_organizacion(organizacion_id, data, usuario):
             return {"error": "El campo 'categoria' es obligatorio"}, 400
 
     # Editar otros campos generales
-    for campo in ['nombre', 'direccion', 'telefono', 'email_contacto', 'codigo_postal', 'ciudad', 'notas']:
+    for campo in ['nombre', 'direccion', 'telefono', 'email_contacto', 'codigo_postal', 'ciudad', 'notas', 'sitio_web']:
         if campo in data:
             setattr(org, campo, data[campo])
 
@@ -176,7 +176,7 @@ def editar_organizacion(organizacion_id, data, usuario):
     if org.tipo == 'empresa':
         detalles = DetalleEmpresa.query.filter_by(organizacion_id=org.organizacion_id).first()
         if detalles:
-            for campo in ['numero_empleados', 'sitio_web']:
+            for campo in ['numero_empleados']:
                 if campo in data:
                     setattr(detalles, campo, data[campo])
     elif org.tipo == 'negocio_local':
@@ -205,6 +205,7 @@ def crear_organizacion(data):
     direccion = data.get('direccion')
     codigo_postal = data.get('codigo_postal')
     email_contacto = data.get('email_contacto')
+    sitio_web = data.get('sitio_web')
     notas = data.get('notas')
     estado_organizacion = data.get('estado_organizacion') or 'prospecto'
 
@@ -246,6 +247,7 @@ def crear_organizacion(data):
         sector=sector,
         categoria=categoria,
         estado_organizacion=estado_organizacion,
+        sitio_web=sitio_web,
     )
     db.session.add(nueva_org)
     db.session.flush()  # Para obtener el ID antes de commit
@@ -253,11 +255,9 @@ def crear_organizacion(data):
     # Crear detalles según tipo
     if tipo == 'empresa':
         numero_empleados = data.get('numero_empleados')
-        sitio_web = data.get('sitio_web')
         detalle_empresa = DetalleEmpresa(
             organizacion_id=nueva_org.organizacion_id,
-            numero_empleados=numero_empleados,
-            sitio_web=sitio_web
+            numero_empleados=numero_empleados
         )
         db.session.add(detalle_empresa)
     elif tipo == 'negocio_local':
