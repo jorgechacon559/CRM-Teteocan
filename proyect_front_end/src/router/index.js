@@ -50,7 +50,8 @@ export const router = createRouter({
         {
           path: '/seguimientos/historial',
           name: 'historial-seguimientos',
-          component: () => import("@/components/seguimientos/HistorialSeguimientos.vue"),
+          // Carga dinámica para code splitting
+          component: () => import('@/components/seguimientos/HistorialSeguimientos.vue'),
           meta: { requiresAuth: true }
         },
         {
