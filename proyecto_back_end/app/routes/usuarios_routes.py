@@ -73,7 +73,7 @@ def editar_usuario(usuario_id):
 @jwt_required(optional=True)
 def baja_usuario(usuario_id):
     if request.method == 'OPTIONS':
-        return jsonify({'ok': True}), 200  # Responde a preflight sin JWT
+        return jsonify({'ok': True}), 200  
 
     current_user_id = get_jwt_identity()
     if not current_user_id:
@@ -91,7 +91,7 @@ def baja_usuario(usuario_id):
 @jwt_required(optional=True)
 def hacer_admin(usuario_id):
     if request.method == 'OPTIONS':
-        return jsonify({'ok': True}), 200  # Preflight sin JWT
+        return jsonify({'ok': True}), 200
 
     current_user_id = get_jwt_identity()
     if not current_user_id:

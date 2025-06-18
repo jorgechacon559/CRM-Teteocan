@@ -317,16 +317,9 @@ const paginatedHistorial = computed(() => {
 onMounted(async () => {
   if (esAdmin) {
     const usuarios = await usuariosStore.getAllInfoUsr({});
-    console.log('Respuesta getAllInfoUsr:', usuarios);
-    // Agrega este log para ver si usuarios.data existe y qué contiene
-    if (usuarios && usuarios.data) {
-      console.log('usuarios.data:', usuarios.data);
-    }
     listaUsuarios.value = Array.isArray(usuarios) ? usuarios : (usuarios.data || []);
     const res = await generalApi.getOrganizaciones();
     listaOrganizaciones.value = res.data.organizaciones || [];
-    console.log('Usuarios:', listaUsuarios.value);
-    console.log('Organizaciones:', listaOrganizaciones.value);
     await cargarHistorial();
   } else {
     await cargarHistorialPersonal();
@@ -342,7 +335,6 @@ async function cargarHistorial() {
   if (filtroNivelDigital.value) params.nivel_digitalizacion = filtroNivelDigital.value;
   const res = await generalApi.getSeguimientos(params);
   historial.value = res.data.seguimientos || res.data || [];
-  console.log('Seguimientos cargados:', historial.value); // <-- aquí
 }
 
 async function cargarHistorialPersonal() {

@@ -439,16 +439,21 @@ async function cargarOrganizaciones() {
   historial.value = []
   paginaDisponibles.value = 1
   paginaAsignadas.value = 1
+  const res = await generalApi.getOrganizaciones({ tipo: tipoBusqueda.value })
+  const todas = res.data.organizaciones || []
   if (usuarioActual.rol === 'admin') {
-    const res = await generalApi.getOrganizaciones({ tipo: tipoBusqueda.value })
-    const todas = res.data.organizaciones || []
-    // Asignadas a mí
     organizacionesAsignadas.value = todas.filter(
       org => org.prospecto_id === usuarioActual.usuario_id
     )
-    // Disponibles: las que no están asignadas a mí
     organizacionesDisponibles.value = todas.filter(
       org => org.prospecto_id !== usuarioActual.usuario_id
+    )
+  } else {
+    organizacionesAsignadas.value = todas.filter(
+      org => org.prospecto_id === usuarioActual.usuario_id
+    )
+    organizacionesDisponibles.value = todas.filter(
+      org => !org.prospecto_id
     )
   }
 }

@@ -90,7 +90,6 @@ const getInfo = async () => {
 };
 onMounted(async () => {
   await getInfo();
-  console.log('Usuarios cargados:', usuarios.data);
 });
 
 // Modal para upgrade
